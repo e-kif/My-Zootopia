@@ -46,6 +46,17 @@ def wrap_into_html_tag(input_string, html_tag, tag_class="", tag_id=""):
     return opening_tag + input_string + closing_tag
 
 
+def get_all_animals_characteristics(animals):
+    """Returns a list of all animals' characteristics
+    :param animals: list of animals
+    :return: list of strings
+    """
+    char_list = []
+    for animal in animals:
+        char_list += animal['characteristics'].keys()
+    return sorted(set(char_list))
+
+
 def get_animal_characteristic(animal, characteristic):
     """Returns tuple of animal characteristic name and value or empty string
     :param animal: dictionary
@@ -72,13 +83,13 @@ def serialize_animal(animal, characteristics):
             animal_chars.append(get_animal_characteristic(animal, characteristic))
     animal_name = wrap_into_html_tag(animal['name'], "div", "card__title") + "\n"
     location_text = f'{wrap_into_html_tag("Location", "strong")}: {animal["locations"][0]}' + "\n"
-    animal_info = wrap_into_html_tag(location_text, "li") + "\n"
+    animal_info = wrap_into_html_tag(location_text, "li", "animal_characteristic") + "\n"
     for animal_char in animal_chars:
         if animal_char:
             list_item = f'{wrap_into_html_tag(animal_char[0], "strong")}: {animal_char[1]}'
-            list_item = wrap_into_html_tag(list_item, "li") + "\n"
+            list_item = wrap_into_html_tag(list_item, "li", "animal_characteristic") + "\n"
             animal_info += list_item
-    animal_info = wrap_into_html_tag(animal_info, "ul") + "\n"
+    animal_info = wrap_into_html_tag(animal_info, "ul", "card__info") + "\n"
     characteristics_output = wrap_into_html_tag(animal_info,
                                                 "p",
                                                 "card__text") + "\n"
@@ -106,15 +117,12 @@ def main():
     replaces placeholder from template with actual info, writes new html file
     :return: None
     """
-    animal_characteristics = ['diet', 'type', 'distinctive_feature',
-                              'temperament', 'training', 'slogan',
-                              'group', 'color', 'skin_type', 'lifespan']
     data = load_data("animals_data.json")
+    animal_characteristics = get_all_animals_characteristics(data)
     html_template = read_html_template('animals_template.html')
     animals_info_string = get_all_animals_info(data, animal_characteristics)
     new_html = html_template.replace("__REPLACE_ANIMALS_INFO__", animals_info_string)
     write_html_file('animals.html', new_html)
-    # print(data[0]['characteristics'].keys())
 
 
 if __name__ == "__main__":
