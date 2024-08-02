@@ -29,22 +29,28 @@ def write_html_file(file_path, html_content):
         file.write(html_content)
 
 
+def get_one_animal_info(animal):
+    output_string = ""
+    animal_info = {
+        'name': animal['name'],
+        'diet': animal['characteristics']['diet'],
+        'location': animal['locations'][0]
+    }
+    try:
+        animal_info['type'] = animal['characteristics']['type']
+    except KeyError:
+        pass
+    for info in animal_info.keys():
+        output_string += f'{info.capitalize()}: {animal_info[info]}<br>'
+    return output_string
+
+
 def get_all_animals_info(animals_data):
     all_animals_info = ""
+    opening_tag = '<li class="cards__item">'
+    closing_tag = '</li>'
     for animal in animals_data:
-        animal_info = {
-            'name': animal['name'],
-            'diet': animal['characteristics']['diet'],
-            'location': animal['locations'][0]
-        }
-        try:
-            animal_info['type'] = animal['characteristics']['type']
-        except KeyError:
-            pass
-
-        for info in animal_info.keys():
-            all_animals_info += f'{info.capitalize()}: {animal_info[info]}\n'
-        all_animals_info += '\n'
+        all_animals_info += opening_tag + get_one_animal_info(animal) + closing_tag
     return all_animals_info
 
 
@@ -54,6 +60,7 @@ def main():
     animals_info_string = get_all_animals_info(data)
     new_html = html_template.replace("__REPLACE_ANIMALS_INFO__", animals_info_string)
     write_html_file('animals.html', new_html)
+
 
 if __name__ == "__main__":
     main()
