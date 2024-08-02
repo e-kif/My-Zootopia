@@ -29,8 +29,28 @@ def write_html_file(file_path, html_content):
         file.write(html_content)
 
 
+def wrap_into_html_tag(input_string, html_tag, tag_class="", tag_id=""):
+    """Wraps a string into given html tag, assigns class and id if provided
+    :param input_string: string for wrapping
+    :param html_tag: html tag
+    :param tag_class: class for wrapping tag
+    :param tag_id: id for wrapping tag
+    :return: string
+    """
+    if tag_class:
+        tag_class = f' class="{tag_class}"'
+    if tag_id:
+        tag_id = f' id="{tag_id}"'
+    opening_tag = f'<{html_tag}{tag_id}{tag_class}>'
+    closing_tag = f'</{html_tag}>'
+    return opening_tag + input_string + closing_tag
+
+
 def get_one_animal_info(animal):
-    output_string = ""
+    """Converts dictionary into html-formatted string
+    :param animal: dictionary
+    :return: string
+    """
     animal_info = {
         'name': animal['name'],
         'diet': animal['characteristics']['diet'],
@@ -38,19 +58,20 @@ def get_one_animal_info(animal):
     }
     try:
         animal_info['type'] = animal['characteristics']['type']
+        animal_type = f'{wrap_into_html_tag("Type:", "strong")} {animal_info["type"]}<br/>\n'
     except KeyError:
-        pass
-    for info in animal_info.keys():
-        output_string += f'{info.capitalize()}: {animal_info[info]}<br>'
-    return output_string
+        animal_type = ""
+    animal_name = wrap_into_html_tag(animal_info['name'], "div", "card__title") + "\n"
+    animal_location = f'{wrap_into_html_tag("Location:", "strong")} {animal_info["location"]}<br/>\n'
+    animal_diet = f'{wrap_into_html_tag("Diet:", "strong")} {animal_info["diet"]}<br/>\n'
+    animal_info = wrap_into_html_tag(animal_location + animal_type + animal_diet, "p", "card__text")
+    return animal_name + animal_info + "\n"
 
 
 def get_all_animals_info(animals_data):
     all_animals_info = ""
-    opening_tag = '<li class="cards__item">'
-    closing_tag = '</li>'
     for animal in animals_data:
-        all_animals_info += opening_tag + get_one_animal_info(animal) + closing_tag
+        all_animals_info += wrap_into_html_tag(get_one_animal_info(animal), "li", "cards__item")
     return all_animals_info
 
 
