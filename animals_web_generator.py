@@ -27,6 +27,7 @@ def write_html_file(file_path, html_content):
     """
     with open(file_path, "w") as file:
         file.write(html_content)
+    print('Html file was generated successfully')
 
 
 def wrap_into_html_tag(input_string, html_tag, tag_class="", tag_id=""):
@@ -44,6 +45,43 @@ def wrap_into_html_tag(input_string, html_tag, tag_class="", tag_id=""):
     opening_tag = f'<{html_tag}{tag_id}{tag_class}>'
     closing_tag = f'</{html_tag}>'
     return opening_tag + input_string + closing_tag
+
+
+def ask_user_for_skin_type(animals):
+    """Generates a list of available skin types, prints the list,
+    gets desirable skin type from user
+    :param animals: list of animals
+    :return: string
+    """
+    skin_types = []
+    [skin_types.append(animal['characteristics']['skin_type']) for animal in animals]
+    skin_types = sorted(set(skin_types))
+    while True:
+        print("List of possible skin types:")
+        print("\t" + "\n\t".join(skin_types))
+        user_input = input('Enter a skin type, that you want to filter animals by '
+                           '(leave blank to generate html without filter): ')
+        user_input = user_input.strip().lower().capitalize()
+        if user_input in skin_types or not user_input:
+            return user_input
+        print(f'There is no skin type "{user_input}".\n')
+
+
+def filter_animals_by_characteristic(animals, characteristic_type, value):
+    """Filters animals and returns a new list with animals,
+    whose characteristic_type is equal to value.
+    If value is empty returns original animals
+    :param animals: list
+    :param characteristic_type: string
+    :param value: string
+    :return: list
+    """
+    new_animals_list = []
+    if not value:
+        return animals
+    [new_animals_list.append(animal) for animal in animals
+     if animal['characteristics'][characteristic_type] == value]
+    return new_animals_list
 
 
 def get_all_animals_characteristics(animals):
@@ -113,6 +151,7 @@ def get_all_animals_info(animals_data, characteristics):
 
 def main():
     """Loads data from external JSON file, reads html template file,
+    applies user filter (if any) to animals,
     generates html-formatted string with animals info,
     replaces placeholder from template with actual info, writes new html file
     :return: None
@@ -120,6 +159,10 @@ def main():
     data = load_data("animals_data.json")
     animal_characteristics = get_all_animals_characteristics(data)
     html_template = read_html_template('animals_template.html')
+    user_skin_type = ask_user_for_skin_type(data)
+    data = filter_animals_by_characteristic(data,
+                                            'skin_type',
+                                            user_skin_type)
     animals_info_string = get_all_animals_info(data, animal_characteristics)
     new_html = html_template.replace("__REPLACE_ANIMALS_INFO__", animals_info_string)
     write_html_file('animals.html', new_html)
