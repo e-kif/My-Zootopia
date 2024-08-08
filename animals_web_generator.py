@@ -1,4 +1,6 @@
 import json
+import os
+from dotenv import load_dotenv
 
 
 def load_data(file_path):
@@ -156,6 +158,9 @@ def main():
     replaces placeholder from template with actual info, writes new html file
     :return: None
     """
+    load_dotenv()
+    API_KEY = os.getenv('API_KEY')
+    
     data = load_data("animals_data.json")
     animal_characteristics = get_all_animals_characteristics(data)
     html_template = read_html_template('animals_template.html')
