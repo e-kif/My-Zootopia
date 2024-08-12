@@ -1,6 +1,23 @@
 import json
 import os
 from dotenv import load_dotenv
+import requests
+
+load_dotenv()
+API_KEY = os.getenv('API_KEY')
+
+
+def load_data_api(search_key):
+    """Gets data from api-ninjas.com using api key
+    :param search_key: animal name for API search
+    :return: list
+    """
+    url = "https://api.api-ninjas.com/v1/animals"
+    params = "?name=" + search_key
+    header_api = {"x-api-key": API_KEY}
+    result = requests.get(url + params, headers=header_api).json()
+    print(type(result))
+    return result
 
 
 def load_data(file_path):
@@ -152,16 +169,14 @@ def get_all_animals_info(animals_data, characteristics):
 
 
 def main():
-    """Loads data from external JSON file, reads html template file,
+    """Loads data from API, reads html template file,
     applies user filter (if any) to animals,
     generates html-formatted string with animals info,
     replaces placeholder from template with actual info, writes new html file
     :return: None
     """
-    load_dotenv()
-    API_KEY = os.getenv('API_KEY')
-    
-    data = load_data("animals_data.json")
+    # data = load_data("animals_data.json")
+    data = load_data_api("bear")
     animal_characteristics = get_all_animals_characteristics(data)
     html_template = read_html_template('animals_template.html')
     user_skin_type = ask_user_for_skin_type(data)
