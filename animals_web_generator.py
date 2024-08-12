@@ -7,16 +7,23 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
 
-def load_data_api(search_key):
-    """Gets data from api-ninjas.com using api key
-    :param search_key: animal name for API search
+def ask_user_animal_name():
+    while True:
+        search_key = input('Enter animal name: ')
+        if isinstance(search_key, str) and len(search_key) > 1:
+            return search_key
+        else:
+            print('Expected a string with at least 2 characters')
+
+def load_data_api():
+    """Gets data about animals from api based on user input
     :return: list
     """
+    search_key = ask_user_animal_name()
     url = "https://api.api-ninjas.com/v1/animals"
     params = "?name=" + search_key
     header_api = {"x-api-key": API_KEY}
     result = requests.get(url + params, headers=header_api).json()
-    print(type(result))
     return result
 
 
@@ -73,7 +80,10 @@ def ask_user_for_skin_type(animals):
     :return: string
     """
     skin_types = []
-    [skin_types.append(animal['characteristics']['skin_type']) for animal in animals]
+    try:
+        [skin_types.append(animal['characteristics']['skin_type']) for animal in animals]
+    except KeyError:
+        skin_types.append("Not specified")
     skin_types = sorted(set(skin_types))
     while True:
         print("List of possible skin types:")
@@ -98,8 +108,12 @@ def filter_animals_by_characteristic(animals, characteristic_type, value):
     new_animals_list = []
     if not value:
         return animals
-    [new_animals_list.append(animal) for animal in animals
-     if animal['characteristics'][characteristic_type] == value]
+    if value == "Not specified":
+        [new_animals_list.append(animal) for animal in animals
+            if characteristic_type not in animal['characteristics']]
+    else:
+        [new_animals_list.append(animal) for animal in animals
+            if animal['characteristics'][characteristic_type] == value]
     return new_animals_list
 
 
@@ -176,7 +190,7 @@ def main():
     :return: None
     """
     # data = load_data("animals_data.json")
-    data = load_data_api("bear")
+    data = load_data_api()
     animal_characteristics = get_all_animals_characteristics(data)
     html_template = read_html_template('animals_template.html')
     user_skin_type = ask_user_for_skin_type(data)
